@@ -34,6 +34,7 @@
 module BrianHG_DDR3_PHY_SEQ_v16_tb #(
 
 parameter string     FPGA_VENDOR             = "Altera",         // (Only Altera for now) Use ALTERA, INTEL, LATTICE or XILINX.
+parameter string     FPGA_PLL_VENDOR         = "Gowin",          // (Only Altera,Gowin for now) Use ALTERA, INTEL, GOWIN, LATTICE or XILINX.
 parameter string     FPGA_FAMILY             = "Cyclone IV E",   //"MAX 10",         // With Altera, use Cyclone III, Cyclone IV, Cyclone V, MAX 10,....
 parameter bit        BHG_OPTIMIZE_SPEED      = 1,                // Use '1' for better FMAX performance, this will increase logic cell usage in the BrianHG_DDR3_PHY_SEQ module.
                                                                  // It is recommended that you use '1' when running slowest -8 Altera fabric FPGA above 300MHz or Altera -6 fabric above 350MHz.
@@ -211,7 +212,7 @@ logic  [7:0] RDCAL_data ;                      // A record of the PLL tuning res
 // *********************************************************************************************
 // This module generates the master reference clocks for the entire memory system.
 // *********************************************************************************************
-BrianHG_DDR3_PLL  #(.FPGA_VENDOR    (FPGA_VENDOR),    .INTERFACE_SPEED (INTERFACE_SPEED),  .DDR_TRICK_MTPS_CAP       (DDR_TRICK_MTPS_CAP),
+BrianHG_DDR3_PLL  #(.FPGA_VENDOR    (FPGA_PLL_VENDOR),    .INTERFACE_SPEED (INTERFACE_SPEED),  .DDR_TRICK_MTPS_CAP       (DDR_TRICK_MTPS_CAP),
                     .FPGA_FAMILY    (FPGA_FAMILY),
                     .CLK_KHZ_IN     (CLK_KHZ_IN),     .CLK_IN_MULT     (CLK_IN_MULT),      .CLK_IN_DIV               (CLK_IN_DIV),
                     .DDR3_WDQ_PHASE (DDR3_WDQ_PHASE), .DDR3_RDQ_PHASE  (DDR3_RDQ_PHASE)

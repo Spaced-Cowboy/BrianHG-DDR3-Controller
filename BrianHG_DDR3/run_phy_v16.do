@@ -7,6 +7,12 @@ vlog -sv -work work {BrianHG_DDR3_IO_PORT_ALTERA.sv}
 vlog -sv -work work {BrianHG_DDR3_PHY_SEQ_v16.sv}
 vlog -sv -work work {BrianHG_DDR3_PHY_SEQ_v16_tb.sv}
 
+vlog -work work {Gowin/prim_sim.v}
+vlog -work work {Gowin/gowin_ddr_clocking.v}
+vlog -work work {Gowin/pll_ddr1/pll_ddr1.v}
+vlog -work work {Gowin/pll_ddr2/pll_ddr2.v}
+
+
 restart -force
 run -all
 

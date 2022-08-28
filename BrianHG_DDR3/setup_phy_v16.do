@@ -13,6 +13,11 @@ vlog -sv -work work {BrianHG_DDR3_IO_PORT_ALTERA.sv}
 vlog -sv -work work {BrianHG_DDR3_PHY_SEQ_v16.sv}
 vlog -sv -work work {BrianHG_DDR3_PHY_SEQ_v16_tb.sv}
 
+vlog -work work {Gowin/prim_sim.v}
+vlog -work work {Gowin/gowin_ddr_clocking.v}
+vlog -work work {Gowin/pll_ddr1/pll_ddr1.v}
+vlog -work work {Gowin/pll_ddr2/pll_ddr2.v}
+
 
 # Make Cyclone IV E Megafunctions and PLL available.
 #vsim -t 1ps -L altera_ver -L lpm_ver -L sgate_ver -L altera_mf_ver -L altera_lnsim_ver -L cycloneive_ver -L work -voptargs="+acc"  BrianHG_DDR3_PHY_SEQ_v16_tb

@@ -23,8 +23,8 @@
 
 module BrianHG_DDR3_PLL #(
 
-parameter string     FPGA_VENDOR             = "Altera",       // Use ALTERA, INTEL, LATTICE or XILINX.
-parameter string     FPGA_FAMILY             = "MAX 10",       // (USE "SIM" for RTL simulation bypassing any HW dependent functions) With Altera, use Cyclone III, Cyclone IV, Cyclone V, MAX 10,....
+parameter string     FPGA_VENDOR             = "Gowin",       // Use ALTERA, INTEL, GOWIN, LATTICE or XILINX.
+parameter string     FPGA_FAMILY             = "Arora",       // (USE "SIM" for RTL simulation bypassing any HW dependent functions) With Altera, use Cyclone III, Cyclone IV, Cyclone V, MAX 10,....
 
 // ****************  System clock generation and operation.
 
@@ -540,6 +540,31 @@ end
 // *** End Initiate Altera PLL ***
 // *******************************
 
+// ******************************************************************************************************************************************
+// ***  GOWIN PLL ********************************************************************************************************************
+// ******************************************************************************************************************************************
+end else if (FPGA_VENDOR[0] == "G" || FPGA_VENDOR[0] == "g") begin 
+
+	gowin_ddr_clocking gowin_ddr_clocks
+		(
+		.clk(CLK_IN),						// Input clock from the board
+		.rst(RST_PLL),						// Input reset signal 
+		
+		.phase_step(phase_step),			// Phase-shift values
+        .phase_updn(phase_updn),            // Phase-shift direction
+
+		.clk_ddrMain(PLL1_clk_out[0]),      // Main DDR clock
+		.clk_ddrWrite(PLL1_clk_out[1]),	    // DDR clock for write-ops
+		.clk_ddrRead(PLL1_clk_out[2]),      // DDR clock for read-ops
+		.clk_ddrClient(PLL1_clk_out[3]),    // clock for the DDR client interface
+		.clk_ddrMgmt(PLL1_clk_out[4]),      // clock for internal DDR use
+		
+		.locked(PLL_LOCKED)		            // We're up and running
+		);
+
+// ********************************
+// *** End Initiate Gowin PLL ***
+// ********************************
 // ******************************************************************************************************************************************
 // ***  LATTICE PLL ********************************************************************************************************************
 // ******************************************************************************************************************************************
