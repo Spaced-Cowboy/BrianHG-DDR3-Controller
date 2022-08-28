@@ -1,3 +1,19 @@
+# Fork-specific docs
+
+(The original documentation is unchanged below)
+
+Not a huge difference yet, just an implementation of the DLL clocking for the Gowin part, specifically the Arora family, testing will be done on the [Tang Primer 20k](https://www.aliexpress.com/item/3256804466994057.html) board.
+
+To run the testbench:
+
+- Make a directory 'tmp' in the root folder of your disk containing the source code (eg: C:\tmp)
+- Open a CMD window from the windows menu
+- Change directory to the BrianHG_DDR3 folder
+- type 'modelsim' to run the simulator 
+- type 'do setup_phy_v16.do' into the transcript window of modelsim
+- enjoy
+
+
 # BrianHG-DDR3-Controller
 -----------------------------------------------------
 BrianHG_DDR3_Controller V1.6 Release, June 11, 2022.
