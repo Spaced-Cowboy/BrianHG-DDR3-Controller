@@ -34,8 +34,10 @@
 module BrianHG_DDR3_PHY_SEQ_v16_tb #(
 
 parameter string     FPGA_VENDOR             = "Altera",         // (Only Altera for now) Use ALTERA, INTEL, LATTICE or XILINX.
-parameter string     FPGA_PLL_VENDOR         = "Gowin",          // (Only Altera,Gowin for now) Use ALTERA, INTEL, GOWIN, LATTICE or XILINX.
 parameter string     FPGA_FAMILY             = "Cyclone IV E",   //"MAX 10",         // With Altera, use Cyclone III, Cyclone IV, Cyclone V, MAX 10,....
+
+// Couldn't get Modelsim to run with this defined as a string. Had to make it typeless.
+parameter            FPGA_PLL_FAMILY         = "GW2A-18",        // (Only Altera,Gowin for now) Use ALTERA, INTEL, GOWIN, LATTICE or XILINX.
 parameter bit        BHG_OPTIMIZE_SPEED      = 1,                // Use '1' for better FMAX performance, this will increase logic cell usage in the BrianHG_DDR3_PHY_SEQ module.
                                                                  // It is recommended that you use '1' when running slowest -8 Altera fabric FPGA above 300MHz or Altera -6 fabric above 350MHz.
 parameter bit        BHG_EXTRA_SPEED         = 1,                // Use '1' for even better FMAX performance or when overclocking the core.  This will increase logic cell usage.
@@ -79,7 +81,7 @@ parameter bit [4:0]  DDR3_MAX_REF_QUEUE      = 8,                // Defines the 
 parameter bit [6:0]  IDLE_TIME_uSx10         = 2,                // Defines the time in 1/10uS until the command IDLE counter will allow low priority REFRESH cycles.
                                                                  // Use 10 for 1uS.  0=disable, 1 for a minimum effect, 127 maximum.
 
-parameter bit        SKIP_PUP_TIMER          = 1,//0,                // Skip timer during and after reset. ***ONLY use 1 for quick simulations.
+parameter bit        SKIP_PUP_TIMER          = 0,//0,                // Skip timer during and after reset. ***ONLY use 1 for quick simulations.
 
 parameter string     BANK_ROW_ORDER          = "ROW_BANK_COL",   // Only supports "ROW_BANK_COL" or "BANK_ROW_COL".  Choose to optimize your memory access.
 
@@ -212,8 +214,8 @@ logic  [7:0] RDCAL_data ;                      // A record of the PLL tuning res
 // *********************************************************************************************
 // This module generates the master reference clocks for the entire memory system.
 // *********************************************************************************************
-BrianHG_DDR3_PLL  #(.FPGA_VENDOR    (FPGA_PLL_VENDOR),    .INTERFACE_SPEED (INTERFACE_SPEED),  .DDR_TRICK_MTPS_CAP       (DDR_TRICK_MTPS_CAP),
-                    .FPGA_FAMILY    (FPGA_FAMILY),
+BrianHG_DDR3_PLL  #(.FPGA_VENDOR    (FPGA_VENDOR),    .INTERFACE_SPEED (INTERFACE_SPEED),  .DDR_TRICK_MTPS_CAP       (DDR_TRICK_MTPS_CAP),
+                    .FPGA_FAMILY    (FPGA_PLL_FAMILY),
                     .CLK_KHZ_IN     (CLK_KHZ_IN),     .CLK_IN_MULT     (CLK_IN_MULT),      .CLK_IN_DIV               (CLK_IN_DIV),
                     .DDR3_WDQ_PHASE (DDR3_WDQ_PHASE), .DDR3_RDQ_PHASE  (DDR3_RDQ_PHASE)
 ) DUT_DDR3_PLL (    .RST_IN         (RST_IN),         .RST_OUT         (RESET),            .CLK_IN    (CLK_IN),      .DDR3_CLK    (DDR3_CLK),
