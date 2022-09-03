@@ -81,7 +81,7 @@ parameter bit [4:0]  DDR3_MAX_REF_QUEUE      = 8,                // Defines the 
 parameter bit [6:0]  IDLE_TIME_uSx10         = 2,                // Defines the time in 1/10uS until the command IDLE counter will allow low priority REFRESH cycles.
                                                                  // Use 10 for 1uS.  0=disable, 1 for a minimum effect, 127 maximum.
 
-parameter bit        SKIP_PUP_TIMER          = 0,//0,                // Skip timer during and after reset. ***ONLY use 1 for quick simulations.
+parameter bit        SKIP_PUP_TIMER          = 1,//0,                // Skip timer during and after reset. ***ONLY use 1 for quick simulations.
 
 parameter string     BANK_ROW_ORDER          = "ROW_BANK_COL",   // Only supports "ROW_BANK_COL" or "BANK_ROW_COL".  Choose to optimize your memory access.
 

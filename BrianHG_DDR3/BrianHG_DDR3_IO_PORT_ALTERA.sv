@@ -211,6 +211,28 @@ logic                           pODT;     // DDR3 ODT
 logic   [DDR3_WIDTH_ADDR-1:0]   pA;       // DDR3 multiplexed address input bus
 logic   [DDR3_WIDTH_BANK-1:0]   pBA;      // DDR3 Bank select
 
+// Gowin signals for comparison purposes only
+(*preserve*) wire	[DDR3_NUM_CK-1:0]	        gowin_ck_p;         // P clock signal out
+(*preserve*) wire	[DDR3_NUM_CK-1:0]	        gowin_ck_n;         // N clock signal out
+(*preserve*) wire	[DDR3_WIDTH_ADDR-1:0]	    gowin_addr;         // address signal out
+(*preserve*) wire	[DDR3_WIDTH_BANK-1:0]	    gowin_bank;         // bank-addr signal out
+(*preserve*) wire                               gowin_RAS;          // row-addr strobe signal out
+(*preserve*) wire                               gowin_CAS;          // col-addr strobe signal out
+(*preserve*) wire                               gowin_WE;           // write-enable signal out
+(*preserve*) wire                               gowin_CS;           // chip select signal out
+(*preserve*) wire                               gowin_ODT;          // on-die term signal out
+(*preserve*) wire   [DDR3_WIDTH_DQS-1:0]        gowin_RDQS_h;       // DQS 'high' read from DDR3
+(*preserve*) wire   [DDR3_WIDTH_DQS-1:0]        gowin_RDQS_l;       // DQS 'low' read from DDR3
+(*preserve*) wire   [DDR3_WIDTH_DQS-1:0]        gowin_DDR3_DQS_p;   // DQS 'low' read from DDR3
+(*preserve*) wire   [DDR3_WIDTH_DQS-1:0]        gowin_DDR3_DQS_n;   // DQS 'low' read from DDR3
+(*preserve*) wire   [DDR3_WIDTH_DQS-1:0]        gowin_dqs_tx;       // DQS internal OE
+(*preserve*) wire   [DQ_WIDTH-1:0]              gowin_RDQ_h;        // DQ 'high' bit
+(*preserve*) wire   [DQ_WIDTH-1:0]              gowin_RDQ_l;        // DQ 'low' bit
+(*preserve*) wire   [DQ_WIDTH-1:0]              gowin_DDR3_DQ;      // DQ pads
+(*preserve*) wire   [DDR3_WIDTH_DM-1:0]         gowin_DDR3_DM;      // DM pads
+
+
+
 // Selectively insert a delay between the command port's function and IO buffer pins depending on parameter 'CMD_ADD_DLY'.
 generate if (CMD_ADD_DLY) begin
                             always @(posedge DDR_CLK)  { pBA,  pA,  pRAS_n,  pCAS_n,  pWE_n,  pCS_n,  pODT} <= { BA,  A,  RAS_n,  CAS_n,  WE_n,  CS_n,  ODT};
@@ -372,6 +394,44 @@ end else begin // Older altddio_out DDR Buffers for Cyclone V/IV/III
     
                      .dataout       ( { DDR3_CK_p         , DDR3_CK_n         } ) );
 
+/*********************************************************\
+|* Gowin implementation of DDR3_CLK
+\*********************************************************/
+	///////////////////////////////////////////////////////////////////////////
+	// We need a reference to the global reset, hold it high
+	///////////////////////////////////////////////////////////////////////////
+    GSR GSR  
+        (
+        .GSRI(1'b1) 
+        );
+
+	///////////////////////////////////////////////////////////////////////////
+	// Create the Clocks, both +ve and -ve
+	///////////////////////////////////////////////////////////////////////////
+	for (x=0; x<DDR3_NUM_CK; x = x + 1) 
+		begin : DDR_Clocks
+            wire gowin_clock;
+            wire gowin_ck_OE;
+
+			ODDR gowin_ck_ddr_inst 
+				(
+				.Q0(gowin_clock),       // Send +ve clock to this pin
+                .Q1(gowin_ck_OE),       // Not used but save a warning
+				.D0(1'b0),				// +ve clock goes low to start
+				.D1(1'b1),				// +ve clock goes high in 2nd phase
+				.TX(1'b0),				// TX=0 -> Output pin
+				.CLK(DDR_CLK)			// DDR clock
+				);
+            
+            TLVDS_OBUF gowin_ck_lvds_inst
+                (
+                .I(gowin_clock),
+                .O(gowin_ck_p[x]),
+                .OB(gowin_ck_n[x])
+                );
+		end
+
+
 // ****************************************
 // DDR3 Memory IO port -> Command Pins
 // ****************************************
@@ -386,6 +446,117 @@ end else begin // Older altddio_out DDR Buffers for Cyclone V/IV/III
                      .datain_l      ( {    pBA,     pA,     pRAS_n,     pCAS_n,     pWE_n,     pCS_n,     pODT} ),
     
                      .dataout       ( {DDR3_BA, DDR3_A, DDR3_RAS_n, DDR3_CAS_n, DDR3_WE_n, DDR3_CS_n, DDR3_ODT} ) );
+
+
+
+
+	///////////////////////////////////////////////////////////////////////////
+	// Create the Command bus : Address
+	///////////////////////////////////////////////////////////////////////////
+    for (x=0; x<DDR3_WIDTH_ADDR; x = x + 1)
+        begin : Gowin_Address
+            wire gowin_addr_OE;
+			ODDR gowin_addr_inst 
+				(
+				.Q0(gowin_addr[x]),		// Send to this pin
+                .Q1(gowin_addr_OE),     // Not used but save a warning
+				.D0(pA[x]),	            // Address input
+				.D1(pA[x]),		        // Duplicate during 2nd phase
+				.TX(1'b0),				// TX=0 -> Output pin
+				.CLK(DDR_CLK)			// DDR clock
+				);
+        end
+
+	///////////////////////////////////////////////////////////////////////////
+	// Create the Command bus : Bank select
+	///////////////////////////////////////////////////////////////////////////
+    for (x=0; x<DDR3_WIDTH_BANK; x = x + 1)
+        begin : Gowin_Bank
+            wire gowin_bank_oe;   
+			ODDR gowin_ba_inst 
+				(
+				.Q0(gowin_bank[x]),     // Send to this pin
+                .Q1(gowin_bank_oe),     // Not used but save a warning
+				.D0(pBA[x]),	        // Bank input
+				.D1(pBA[x]),		    // Duplicate during 2nd phase
+				.TX(1'b0),				// TX=0 -> Output pin
+				.CLK(DDR_CLK)			// DDR clock
+				);
+        end
+
+	///////////////////////////////////////////////////////////////////////////
+	// Create the Command bus : RAS
+	///////////////////////////////////////////////////////////////////////////
+    wire gowin_ras_oe;
+    ODDR gowin_ras_inst 
+        (
+        .Q0(gowin_RAS),                 // Send to this pin
+        .Q1(gowin_ras_oe),              // Not used but save a warning
+        .D0(pRAS_n),	                // RAS input
+        .D1(pRAS_n),		            // Duplicate during 2nd phase
+        .TX(1'b0),				        // TX=0 -> Output pin
+        .CLK(DDR_CLK)			        // DDR clock
+        );
+
+
+
+	///////////////////////////////////////////////////////////////////////////
+	// Create the Command bus : CAS
+	///////////////////////////////////////////////////////////////////////////
+    wire gowin_cas_oe;
+    ODDR gowin_cas_inst 
+        (
+        .Q0(gowin_CAS),                 // Send to this pin
+        .Q1(gowin_cas_oe),              // Not used but save a warning
+        .D0(pCAS_n),	                // CAS input
+        .D1(pCAS_n),		            // Duplicate during 2nd phase
+        .TX(1'b0),				        // TX=0 -> Output pin
+        .CLK(DDR_CLK)				    // DDR clock
+        );
+
+	///////////////////////////////////////////////////////////////////////////
+	// Create the Command bus : WE
+	///////////////////////////////////////////////////////////////////////////
+    wire gowin_we_oe;
+    ODDR gowin_we_inst 
+        (
+        .Q0(gowin_WE),                  // Send to this pin
+        .Q1(gowin_we_oe),               // Not used but save a warning
+        .D0(pWE_n),	                    // CAS input
+        .D1(pWE_n),		                // Duplicate during 2nd phase
+        .TX(1'b0),				        // TX=0 -> Output pin
+        .CLK(DDR_CLK)				    // DDR clock
+        );
+
+	///////////////////////////////////////////////////////////////////////////
+	// Create the Command bus : CS
+	///////////////////////////////////////////////////////////////////////////
+    wire gowin_cs_oe;
+    ODDR gowin_cs_inst 
+        (
+        .Q0(gowin_CS),                  // Send to this pin
+        .Q1(gowin_cs_oe),               // Not used but save a warning
+        .D0(pCS_n),	                    // CS input
+        .D1(pCS_n),		                // Duplicate during 2nd phase
+        .TX(1'b0),				        // TX=0 -> Output pin
+        .CLK(DDR_CLK)				    // DDR clock
+        );
+
+	///////////////////////////////////////////////////////////////////////////
+	// Create the Command bus : ODT
+	///////////////////////////////////////////////////////////////////////////
+    wire gowin_odt_oe;
+    ODDR gowin_odt_inst 
+        (
+        .Q0(gowin_ODT),                 // Send to this pin
+        .Q1(gowin_odt_oe),              // Not used but save a warning
+        .D0(pODT),	                    // CS input
+        .D1(pODT),		                // Duplicate during 2nd phase
+        .TX(1'b0),				        // TX=0 -> Output pin
+        .CLK(DDR_CLK)		            // DDR clock
+        );
+  
+
 
 // ****************************************
 // DDR3 Memory IO port -> DQS Pins
@@ -410,6 +581,73 @@ for (x=0 ; x<DDR3_WIDTH_DQS ; x=x+1) begin : DDR3_IO_DQS_inst // Separating the 
     
                      .combout       (),          .oe_out       (),         .dqsundelayedout () );
 end
+
+
+	///////////////////////////////////////////////////////////////////////////
+	// Create the DQS pins : Data strobe. Construct these as below:
+    //
+    //        +-------------+      +-----------+      +-------------+         
+    //        |    Module   |      |   IDDR    |      | TLVDS_IOBUF |         
+    //        |             |      |           |      |             |         
+    //        |             |      |           |      |             |         
+    //   ---->|    rdClk    |----->| CLK       |      |             |         
+    //        |             |      |           |      |             |         
+    //        |             |      |   D [DDR] |<-----+ O [DDR]     |         
+    //        |             |      |           |      |             |         
+    //   <----+ rdData[1:0] | <----+ Q[1:0]    |      |             |         
+    //        |             |      | (SDR)     |      |             |         
+    //        |             |      +-----------+      |             |  IO+    
+    //        |             |                         |             +---->    
+    //        |             |      +-----------+      |             |         
+    //        |             |      |   ODDR    |      |             |         
+    //        |             |      |           |      |             +---->    
+    //   ---->|    wrClk    |----->| CLK       |      |             |  IO-    
+    //        |             |      |           |      |             |         
+    //   ---->|   txEnable  |----->| TX        |      |             |         
+    //        |             |      |           |      |             |         
+    //        |             |      |  Q1 [DDR] +----->| OEN (DDR)   |         
+    //        |             |      |           |      |             |         
+    //        |             |      |  Q0 [DDR] +----->| I [DDR]     |         
+    //        |             |      |           |      |             |         
+    //        |       2'b10 |----->| D[1:0]    |      |             |         
+    //        |             |      | (SDR)     |      |             |         
+    //        +-------------+      +-----------+      +-------------+         
+	//
+  	///////////////////////////////////////////////////////////////////////////
+
+    for (x=0; x<DDR3_WIDTH_DQS; x = x + 1)
+        begin : Gowin_DQ_Strobes
+
+            wire gowin_dqs_out;
+            wire gowin_dqs_in;
+
+            ODDR gowin_dqs_oddr_inst  
+                (
+                .Q0(gowin_dqs_out),             // ODDR -> IVDS
+                .Q1(gowin_dqs_tx[x]),           // 1'b0 => output
+                .D0(1'b1),                      // Input data [SDR]
+                .D1(1'b0),                      // Input data [SDR]
+                .TX(~OE_DQS[x]),                // Input 'output enable' 0=output
+                .CLK(DDR_CLK)                   // DDR clock
+                );
+
+            IDDR gowin_dqs_iddr_inst  
+                (
+                .Q0(gowin_RDQS_l[x]),           // SDR to app #0
+                .Q1(gowin_RDQS_h[x]),           // SDR to app #1
+                .D(gowin_dqs_in),               // DDR input signal
+                .CLK(DDR_CLK_RDQ) 				// read clock
+                );
+
+            TLVDS_IOBUF gowin_dqs_lvds_iobuf_inst
+                (
+                .O(gowin_dqs_in),               // LVDS -> IDDR
+                .IO(gowin_DDR3_DQS_n[x]),       // -ve LVDS pad
+                .IOB(gowin_DDR3_DQS_p[x]),      // +ve LVDS pad
+                .I(gowin_dqs_out),              // ODDR -> LVDS
+                .OEN(gowin_dqs_tx[x])           // input when 1'b1
+                );
+        end
 
 // ***************************************************************
 // DDR3 Memory IO port -> DQ Pins
@@ -440,6 +678,73 @@ for (x=0 ; x<DQ_WIDTH ; x=x+1) begin : DDR3_IO_DQ_inst // Separating the DQ into
                      .combout       (),          .oe_out       (),         .dqsundelayedout () );
 end
 
+	///////////////////////////////////////////////////////////////////////////
+	// Create the Data bus : DQ - pretty similar to DQS but accept data to 
+    // write as well, and don't use LVDS signalling
+    //
+    //        +-------------+      +-----------+      +-------------+         
+    //        |    Module   |      |   IDDR    |      |    IOBUF    |         
+    //        |             |      |           |      |             |         
+    //        |             |      |           |      |             |         
+    //   ---->|    rdClk    |----->| CLK       |      |             |         
+    //        |             |      |           |      |             |         
+    //        |             |      |   D [DDR] |<-----+ O [DDR]     |         
+    //        |             |      |           |      |             |         
+    //   <----+ rdData[1:0] | <----+ Q[1:0]    |      |             |         
+    //        |             |      | (SDR)     |      |             |         
+    //        |             |      +-----------+      |             | 
+    //        |             |                         |             | IO    
+    //        |             |      +-----------+      |             +---->          
+    //        |             |      |   ODDR    |      |             |         
+    //        |             |      |           |      |             |    
+    //   ---->|    wrClk    |----->| CLK       |      |             |    
+    //        |             |      |           |      |             |         
+    //   ---->|   txEnable  |----->| TX        |      |             |         
+    //        |             |      |           |      |             |         
+    //        |             |      |  Q1 [DDR] +----->| OEN (DDR)   |         
+    //        |             |      |           |      |             |         
+    //        |             |      |  Q0 [DDR] +----->| I [DDR]     |         
+    //        |             |      |           |      |             |         
+    //   ---->| wrData[1:0] |----->| D[1:0]    |      |             |         
+    //        |             |      | (SDR)     |      |             |         
+    //        +-------------+      +-----------+      +-------------+         
+	//
+    ///////////////////////////////////////////////////////////////////////////
+    for (x=0; x<DQ_WIDTH; x = x + 1)
+        begin : gowin_DQ_bus
+
+            wire gowin_dq_out;
+            wire gowin_dq_in;
+            wire gowin_dq_tx_out;
+
+            ODDR gowin_dq_oddr_inst  
+                (
+                .Q0(gowin_dq_out),                  // ODDR -> IVDS
+                .Q1(gowin_dq_tx_out),               // 1'b0 => output
+                .D0(PIN_WDATA_PIPE_h[0][x]),        // Input data [SDR]
+                .D1(PIN_WDATA_PIPE_l[0][x]),        // Input data [SDR]
+                .TX(PIN_OE_WDQ_wide[x]),            // Input 'output enable' 1=out
+                .CLK(DDR_CLK_WDQ)                   // write clock
+                );
+
+            IDDR gowin_dq_iddr_inst  
+                (
+                .Q0(gowin_RDQ_h[x]),                // SDR to app #0
+                .Q1(gowin_RDQ_l[x]),				// SDR to app #1
+                .D(gowin_dq_in),                    // DDR input signal
+                .CLK(DDR_CLK_RDQ)                   // read clock
+                );
+
+            IOBUF gowin_dq_iobuf_inst
+                (
+                .O(gowin_dq_in),                    // IOBUF -> IDDR
+                .IO(gowin_DDR3_DQ[x]),              // DQ pad
+                .I(gowin_dq_out),                   // ODDR -> IOBUF
+                .OEN(gowin_dq_tx_out)               // input when 1'b1
+                );
+
+        end
+
 // *******************************************
 // DDR3 Memory IO port -> DM Pins
 // *******************************************
@@ -457,6 +762,23 @@ for (x=0 ; x<DQM_WIDTH ; x=x+1) begin : DDR3_IO_DM_inst // We separated the DQS 
     
                      .dataout       ( DDR3_DM[x]             ) );
 end
+
+	///////////////////////////////////////////////////////////////////////////
+	// Create the Command bus : data-lane masks
+	///////////////////////////////////////////////////////////////////////////
+    for (x=0; x<DDR3_WIDTH_DM; x = x + 1)
+        begin : gowin_DQM
+            wire gowin_dqm_OE;
+			ODDR gowin_dqm_inst 
+				(
+				.Q0(gowin_DDR3_DM[x]),              // Send to this pin
+                .Q1(gowin_dqm_OE),                  // Not used but save a warning
+				.D0(PIN_WMASK_PIPE_h[0][x]),        // 'high' bit of mask
+				.D1(PIN_WMASK_PIPE_l[0][x]),        // 'low' bit of mask 
+				.TX(1'b0),				            // TX=0 -> Output pin
+				.CLK(DDR_CLK_WDQ)                   // DDR write-clock
+				);
+        end
 
 end endgenerate
 
