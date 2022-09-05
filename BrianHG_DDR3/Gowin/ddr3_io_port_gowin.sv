@@ -435,6 +435,8 @@ generate if (FPGA_FAMILY == "GW2A-18") begin // Newer altera_gpio_lite DDR Buffe
                 .TX(~OE_DQS[x]),                // Input 'output enable' 0=output
                 .CLK(DDR_CLK)                   // DDR clock
                 );
+ 
+            // sync to negedge instead of posedge, 1/2 clock earlier output
             defparam gowin_dqs_oddr_inst.TXCLK_POL   = 1'b1;
 
             IDDR gowin_dqs_iddr_inst  
@@ -502,14 +504,16 @@ generate if (FPGA_FAMILY == "GW2A-18") begin // Newer altera_gpio_lite DDR Buffe
 
             ODDR gowin_dq_oddr_inst  
                 (
-                .Q0(gowin_dq_out),                  // ODDR -> IVDS
-                .Q1(gowin_dq_tx_out),               // 1'b0 => output
+                .Q0(gowin_dq_out),                  // ODDR -> IOBUF
+                .Q1(gowin_dq_tx_out),               // OE   -> IOBUF, 1'b0 => output
                 .D0(PIN_WDATA_PIPE_h[0][x]),        // Input data [SDR]
                 .D1(PIN_WDATA_PIPE_l[0][x]),        // Input data [SDR]
                 .TX(PIN_OE_WDQ_wide[x]),            // Input 'output enable' 1=out
                 .CLK(DDR_CLK_WDQ)                   // write clock
                 );
-            defparam gowin_dq_oddr_inst.TXCLK_POL   = 1'b1;
+
+            // sync to negedge instead of posedge, 1/2 clock earlier output
+            defparam gowin_dq_oddr_inst.TXCLK_POL   = 1'b1; 
 
             IDDR gowin_dq_iddr_inst  
                 (
