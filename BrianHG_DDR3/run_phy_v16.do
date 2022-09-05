@@ -9,6 +9,7 @@ vlog -sv -work work {BrianHG_DDR3_PHY_SEQ_v16_tb.sv}
 
 vlog -work work {Gowin/prim_sim.v}
 vlog -sv -work work {Gowin/gowin_ddr_clocking.sv}
+vlog -sv -work work {Gowin/ddr3_io_port_gowin.sv}
 
 
 restart -force

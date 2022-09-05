@@ -162,7 +162,7 @@ module gowin_ddr_clocking
     defparam ddr3_pll1.DYN_SDIV_SEL     = 2;
     defparam ddr3_pll1.CLKOUTD_SRC      = "CLKOUT";
     defparam ddr3_pll1.CLKOUTD3_SRC     = "CLKOUT";
-    defparam ddr3_pll1.DEVICE           = FPGA_FAMILY;
+    defparam ddr3_pll1.DEVICE           = "GW2A-18";   // seems to no longer accept FPGA_FAMILY(!)
 
 
     ///////////////////////////////////////////////////////////////////////////
@@ -213,7 +213,7 @@ module gowin_ddr_clocking
     defparam ddr3_pll2.DYN_SDIV_SEL     = 4;
     defparam ddr3_pll2.CLKOUTD_SRC      = "CLKOUT";
     defparam ddr3_pll2.CLKOUTD3_SRC     = "CLKOUT";
-    defparam ddr3_pll2.DEVICE           = FPGA_FAMILY;
+    defparam ddr3_pll2.DEVICE           = "GW2A-18";    // seems to no longer accept FPGA_FAMILY(!)
 	defparam ddr3_pll2.DUTYDA_SEL 	    = duty_phase[phaseIndex[3:0]];
 	defparam ddr3_pll2.PSDA_SEL 	    = write_phase[phaseIndex[3:0]];
 

@@ -15,6 +15,7 @@ vlog -sv -work work {BrianHG_DDR3_PHY_SEQ_v16_tb.sv}
 
 vlog -work work {Gowin/prim_sim.v}
 vlog -sv -work work {Gowin/gowin_ddr_clocking.sv}
+vlog -sv -work work {Gowin/ddr3_io_port_gowin.sv}
 
 
 # Make Cyclone IV E Megafunctions and PLL available.
@@ -72,46 +73,25 @@ add wave -hexadecimal /BrianHG_DDR3_PHY_SEQ_v16_tb/DDR3_RESET_n
 add wave -hexadecimal /BrianHG_DDR3_PHY_SEQ_v16_tb/DDR3_CKE
 add wave -hexadecimal /BrianHG_DDR3_PHY_SEQ_v16_tb/DDR3_CMD
 add wave -hexadecimal /BrianHG_DDR3_PHY_SEQ_v16_tb/DDR3_CK_p
-add wave -hexadecimal -color cyan /BrianHG_DDR3_PHY_SEQ_v16_tb/DUT_PHY_SEQ/genblk6/BHG_DDR3_IO_PORT_ALTERA/gowin_ck_p
-add wave -hexadecimal /BrianHG_DDR3_PHY_SEQ_v16_tb/DDR3_CK_n
-add wave -hexadecimal -color cyan /BrianHG_DDR3_PHY_SEQ_v16_tb/DUT_PHY_SEQ/genblk6/BHG_DDR3_IO_PORT_ALTERA/gowin_ck_n
 add wave -hexadecimal /BrianHG_DDR3_PHY_SEQ_v16_tb/DDR3_CS_n
-add wave -hexadecimal -color cyan /BrianHG_DDR3_PHY_SEQ_v16_tb/DUT_PHY_SEQ/genblk6/BHG_DDR3_IO_PORT_ALTERA/gowin_CS
 add wave -hexadecimal /BrianHG_DDR3_PHY_SEQ_v16_tb/DDR3_RAS_n
-add wave -hexadecimal -color cyan /BrianHG_DDR3_PHY_SEQ_v16_tb/DUT_PHY_SEQ/genblk6/BHG_DDR3_IO_PORT_ALTERA/gowin_RAS
 add wave -hexadecimal /BrianHG_DDR3_PHY_SEQ_v16_tb/DDR3_CAS_n
-add wave -hexadecimal -color cyan /BrianHG_DDR3_PHY_SEQ_v16_tb/DUT_PHY_SEQ/genblk6/BHG_DDR3_IO_PORT_ALTERA/gowin_CAS
 add wave -hexadecimal /BrianHG_DDR3_PHY_SEQ_v16_tb/DDR3_WE_n
-add wave -hexadecimal -color cyan /BrianHG_DDR3_PHY_SEQ_v16_tb/DUT_PHY_SEQ/genblk6/BHG_DDR3_IO_PORT_ALTERA/gowin_WE
 add wave -hexadecimal /BrianHG_DDR3_PHY_SEQ_v16_tb/DDR3_ODT
-add wave -hexadecimal -color cyan /BrianHG_DDR3_PHY_SEQ_v16_tb/DUT_PHY_SEQ/genblk6/BHG_DDR3_IO_PORT_ALTERA/gowin_ODT
 add wave -hexadecimal /BrianHG_DDR3_PHY_SEQ_v16_tb/DDR3_A
-add wave -hexadecimal -color cyan /BrianHG_DDR3_PHY_SEQ_v16_tb/DUT_PHY_SEQ/genblk6/BHG_DDR3_IO_PORT_ALTERA/gowin_addr
 add wave -hexadecimal /BrianHG_DDR3_PHY_SEQ_v16_tb/DDR3_BA
-add wave -hexadecimal -color cyan /BrianHG_DDR3_PHY_SEQ_v16_tb/DUT_PHY_SEQ/genblk6/BHG_DDR3_IO_PORT_ALTERA/gowin_bank
-add wave -hexadecimal /BrianHG_DDR3_PHY_SEQ_v16_tb/DUT_PHY_SEQ/genblk6/BHG_DDR3_IO_PORT_ALTERA/OE_DQS 
-add wave -hexadecimal -color cyan /BrianHG_DDR3_PHY_SEQ_v16_tb/DUT_PHY_SEQ/genblk6/BHG_DDR3_IO_PORT_ALTERA/gowin_dqs_tx
 add wave -hexadecimal /BrianHG_DDR3_PHY_SEQ_v16_tb/DDR3_DQS_p 
-add wave -hexadecimal -color cyan /BrianHG_DDR3_PHY_SEQ_v16_tb/DUT_PHY_SEQ/genblk6/BHG_DDR3_IO_PORT_ALTERA/gowin_DDR3_DQS_p
-add wave -hexadecimal /BrianHG_DDR3_PHY_SEQ_v16_tb/DDR3_DQS_n 
-add wave -hexadecimal -color cyan /BrianHG_DDR3_PHY_SEQ_v16_tb/DUT_PHY_SEQ/genblk6/BHG_DDR3_IO_PORT_ALTERA/gowin_DDR3_DQS_n
 add wave -hexadecimal /BrianHG_DDR3_PHY_SEQ_v16_tb/DDR3_DQ
-add wave -hexadecimal -color cyan /BrianHG_DDR3_PHY_SEQ_v16_tb/DUT_PHY_SEQ/genblk6/BHG_DDR3_IO_PORT_ALTERA/gowin_DDR3_DQ
 add wave -hexadecimal /BrianHG_DDR3_PHY_SEQ_v16_tb/DDR3_DM
-add wave -hexadecimal -color cyan /BrianHG_DDR3_PHY_SEQ_v16_tb/DUT_PHY_SEQ/genblk6/BHG_DDR3_IO_PORT_ALTERA/gowin_DDR3_DM
 add wave -divider     "DDR3_PHY Data Path"
 
-add wave -hexadecimal /BrianHG_DDR3_PHY_SEQ_v16_tb/DUT_PHY_SEQ/genblk6/BHG_DDR3_IO_PORT_ALTERA/RDQS_ph
-add wave -hexadecimal -color cyan /BrianHG_DDR3_PHY_SEQ_v16_tb/DUT_PHY_SEQ/genblk6/BHG_DDR3_IO_PORT_ALTERA/gowin_RDQS_h
-add wave -hexadecimal /BrianHG_DDR3_PHY_SEQ_v16_tb/DUT_PHY_SEQ/genblk6/BHG_DDR3_IO_PORT_ALTERA/RDQS_pl
-add wave -hexadecimal -color cyan /BrianHG_DDR3_PHY_SEQ_v16_tb/DUT_PHY_SEQ/genblk6/BHG_DDR3_IO_PORT_ALTERA/gowin_RDQS_l
-add wave -hexadecimal /BrianHG_DDR3_PHY_SEQ_v16_tb/DUT_PHY_SEQ/genblk6/BHG_DDR3_IO_PORT_ALTERA/RDQ_h
-add wave -hexadecimal -color cyan /BrianHG_DDR3_PHY_SEQ_v16_tb/DUT_PHY_SEQ/genblk6/BHG_DDR3_IO_PORT_ALTERA/gowin_RDQ_h
-add wave -hexadecimal /BrianHG_DDR3_PHY_SEQ_v16_tb/DUT_PHY_SEQ/genblk6/BHG_DDR3_IO_PORT_ALTERA/RDQ_l
-add wave -hexadecimal -color cyan /BrianHG_DDR3_PHY_SEQ_v16_tb/DUT_PHY_SEQ/genblk6/BHG_DDR3_IO_PORT_ALTERA/gowin_RDQ_l
-add wave -hexadecimal /BrianHG_DDR3_PHY_SEQ_v16_tb/DUT_PHY_SEQ/genblk6/BHG_DDR3_IO_PORT_ALTERA/RDATA_toggle
-add wave -hexadecimal /BrianHG_DDR3_PHY_SEQ_v16_tb/DUT_PHY_SEQ/genblk6/BHG_DDR3_IO_PORT_ALTERA/RDATA
-add wave -hexadecimal /BrianHG_DDR3_PHY_SEQ_v16_tb/DUT_PHY_SEQ/genblk6/BHG_DDR3_IO_PORT_ALTERA/RDATA_store
+add wave -hexadecimal /BrianHG_DDR3_PHY_SEQ_v16_tb/DUT_PHY_SEQ/genblk6/BHG_DDR3_IO_PORT_GOWIN/RDQS_ph
+add wave -hexadecimal /BrianHG_DDR3_PHY_SEQ_v16_tb/DUT_PHY_SEQ/genblk6/BHG_DDR3_IO_PORT_GOWIN/RDQS_pl
+add wave -hexadecimal /BrianHG_DDR3_PHY_SEQ_v16_tb/DUT_PHY_SEQ/genblk6/BHG_DDR3_IO_PORT_GOWIN/RDQ_h
+add wave -hexadecimal /BrianHG_DDR3_PHY_SEQ_v16_tb/DUT_PHY_SEQ/genblk6/BHG_DDR3_IO_PORT_GOWIN/RDQ_l
+add wave -hexadecimal /BrianHG_DDR3_PHY_SEQ_v16_tb/DUT_PHY_SEQ/genblk6/BHG_DDR3_IO_PORT_GOWIN/RDATA_toggle
+add wave -hexadecimal /BrianHG_DDR3_PHY_SEQ_v16_tb/DUT_PHY_SEQ/genblk6/BHG_DDR3_IO_PORT_GOWIN/RDATA
+add wave -hexadecimal /BrianHG_DDR3_PHY_SEQ_v16_tb/DUT_PHY_SEQ/genblk6/BHG_DDR3_IO_PORT_GOWIN/RDATA_store
 
 add wave -divider     "CMD Timer Out"
 add wave -hexadecimal /BrianHG_DDR3_PHY_SEQ_v16_tb/DUT_PHY_SEQ/RX_BANK 

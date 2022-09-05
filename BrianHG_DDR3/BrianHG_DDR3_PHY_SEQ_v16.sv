@@ -388,6 +388,37 @@ BrianHG_DDR3_IO_PORT_ALTERA #(
 // ***********************************
 // *** End Initiate Xilinx DDR PHY ***
 // ***********************************
+// ******************************************************************************************************************************************
+// ***  Gowin DDR PHY ********************************************************************************************************************
+// ******************************************************************************************************************************************
+end else if (FPGA_VENDOR[0] == "G" || FPGA_VENDOR[0] == "g") begin 
+
+DDR3_IO_PORT_GOWIN #(
+    .FPGA_VENDOR     ( FPGA_VENDOR      ),  .FPGA_FAMILY     ( FPGA_FAMILY      ),  .CLK_KHZ_IN      ( CLK_KHZ_IN         ),
+    .CLK_IN_MULT     ( CLK_IN_MULT      ),  .CLK_IN_DIV      ( CLK_IN_DIV       ),  .CMD_ADD_DLY     ( BHG_OPTIMIZE_SPEED ), 
+    .DDR3_WDQ_PHASE  ( DDR3_WDQ_PHASE   ),  .DDR3_RDQ_PHASE  ( DDR3_RDQ_PHASE   ),  .BHG_EXTRA_SPEED ( BHG_EXTRA_SPEED    ),
+    .DDR3_WIDTH_DQ   ( DDR3_WIDTH_DQ    ),  .DDR3_NUM_CHIPS  ( DDR3_NUM_CHIPS   ),  .DDR3_NUM_CK     ( DDR3_NUM_CK        ),
+    .DDR3_WIDTH_ADDR ( DDR3_WIDTH_ADDR  ),  .DDR3_WIDTH_BANK ( DDR3_WIDTH_BANK  ),  .DDR3_WIDTH_CAS  ( DDR3_WIDTH_CAS     ),
+    .DDR3_WIDTH_DM   ( DDR3_WIDTH_DM    ),  .DDR3_WIDTH_DQS  ( DDR3_WIDTH_DQS   ),  .DDR3_RWDQ_BITS  ( DDR3_RWDQ_BITS     )
+) BHG_DDR3_IO_PORT_GOWIN (
+    .RST_IN          ( RST_IN        ),     .DDR_CLK     ( DDR_CLK     ),     .DDR_CLK_WDQ ( DDR_CLK_WDQ    ),     .DDR_CLK_RDQ  ( DDR_CLK_RDQ  ),
+    .RESET_n         ( RESET_n       ),     .CKE         ( CKE         ),     .CS_n        ( CS_n           ),     .RAS_n        ( RAS_n        ),
+    .CAS_n           ( CAS_n         ),     .WE_n        ( WE_n        ),     .A           ( A              ),     .BA           ( BA           ),
+    .WRITE           ( WRITE         ),     .READ        ( READ        ),     .WDATA       ( WDQ            ),     .WMASK        ( WDQM         ),
+    .RDATA_toggle    ( PHY_RDATA_t   ),     .RDATA_store ( RDATA_store ),     .RDATA       ( PHY_RDATA      ),
+    .DDR3_RESET_n    ( DDR3_RESET_n  ),     .DDR3_CK_p   ( DDR3_CK_p   ),     .DDR3_CK_n   ( DDR3_CK_n      ),     .ODT          ( ODT          ),
+    .DDR3_CKE        ( DDR3_CKE      ),     .DDR3_CS_n   ( DDR3_CS_n   ),     .DDR3_RAS_n  ( DDR3_RAS_n     ),     
+    .DDR3_CAS_n      ( DDR3_CAS_n    ),     .DDR3_WE_n   ( DDR3_WE_n   ),     .DDR3_ODT    ( DDR3_ODT       ),     
+    .DDR3_A          ( DDR3_A        ),     .DDR3_BA     ( DDR3_BA     ),     .DDR3_DM     ( DDR3_DM        ),
+    .DDR3_DQ         ( DDR3_DQ       ),     .DDR3_DQS_p  ( DDR3_DQS_p  ),     .DDR3_DQS_n  ( DDR3_DQS_n     ),
+
+    .ODTLon (ODTLon), .ODTLoff (ODTLoff), .CWL (CWL+AL), .CL (CL+AL)
+    );
+
+
+// ***********************************
+// *** End Initiate Gowin DDR PHY ***
+// ***********************************
 end else initial begin
 // ******************************************************************************************************************************************
 // ***  Unknown FPGA Vendor **************************************************************************************************************
