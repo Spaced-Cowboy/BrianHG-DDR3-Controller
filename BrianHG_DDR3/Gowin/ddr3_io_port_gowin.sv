@@ -142,8 +142,12 @@ localparam DQM_WIDTH             = DDR3_WIDTH_DQ/8*DDR3_NUM_CHIPS;
 assign DDR3_RESET_n    = RESET_n  ;  // Driven by the CLK_IN clock domain, sub 10MHz signal.
 assign DDR3_CKE        = CKE      ;  // Driven by the CLK_IN clock domain, sub 10MHz signal.
 
+// Detect if this is a Gowin device we're targeting. Yes, right now this entire file is dedicated to Gowin, 
+// but it may change in future
+localparam GOWIN_ENABLE      = (FPGA_VENDOR[0] == "G" || FPGA_VENDOR[0] == "g") ? 1 : 0;
 
-
+// For Gowin: Cope with both GW2A-18 and GW2A-55 (same architecture)
+localparam GOWIN_READ_OFFSET = GOWIN_ENABLE * ((FPGA_FAMILY.substr(0,3) == "GW2A") ? 3 : 0);
 
 localparam          DDR_OUT_LATENCY  = 1 - CMD_ADD_DLY ; // *** -1 counts for Altera's DDR output buffer clock latency cycles + another 2 for this core's internal latch system.
 localparam          DQS_WIDTH        = 6 ;
@@ -211,19 +215,6 @@ logic                           pODT;     // DDR3 ODT
 logic   [DDR3_WIDTH_ADDR-1:0]   pA;       // DDR3 multiplexed address input bus
 logic   [DDR3_WIDTH_BANK-1:0]   pBA;      // DDR3 Bank select
 
-// Gowin signals for comparison purposes only
-(*preserve*) wire   [DDR3_WIDTH_DQS-1:0]        gowin_RDQS_h;       // DQS 'high' read from DDR3
-(*preserve*) wire   [DDR3_WIDTH_DQS-1:0]        gowin_RDQS_l;       // DQS 'low' read from DDR3
-(*preserve*) wire   [DDR3_WIDTH_DQS-1:0]        gowin_DDR3_DQS_p;   // DQS 'low' read from DDR3
-(*preserve*) wire   [DDR3_WIDTH_DQS-1:0]        gowin_DDR3_DQS_n;   // DQS 'low' read from DDR3
-(*preserve*) wire   [DDR3_WIDTH_DQS-1:0]        gowin_dqs_tx;       // DQS internal OE
-(*preserve*) wire   [DQ_WIDTH-1:0]              gowin_RDQ_h;        // DQ 'high' bit
-(*preserve*) wire   [DQ_WIDTH-1:0]              gowin_RDQ_l;        // DQ 'low' bit
-(*preserve*) wire   [DQ_WIDTH-1:0]              gowin_DDR3_DQ;      // DQ pads
-(*preserve*) wire   [DDR3_WIDTH_DM-1:0]         gowin_DDR3_DM;      // DM pads
-
-
-
 // Selectively insert a delay between the command port's function and IO buffer pins depending on parameter 'CMD_ADD_DLY'.
 generate if (CMD_ADD_DLY) begin
                             always @(posedge DDR_CLK)  { pBA,  pA,  pRAS_n,  pCAS_n,  pWE_n,  pCS_n,  pODT} <= { BA,  A,  RAS_n,  CAS_n,  WE_n,  CS_n,  ODT};
@@ -237,7 +228,7 @@ endgenerate
 // *****************************************************************************************************************
 
 genvar x;
-generate if (FPGA_FAMILY == "GW2A-18") begin // Newer altera_gpio_lite DDR Buffers for Max 10 devices.
+generate if (FPGA_FAMILY == "GW2A-18") begin // Gowin Arora parts.
 // ****************************************
 // DDR3 Memory IO port -> DDR3_CLK pins
 //
@@ -426,6 +417,9 @@ generate if (FPGA_FAMILY == "GW2A-18") begin // Newer altera_gpio_lite DDR Buffe
             wire gowin_dqs_out;                 // Internal: ODDR->IOBUF
             wire gowin_dqs_in;                  // Internal: IOBUF->IDDR
             wire gowin_dqs_tx;                  // Internal: OE on input to ODDR
+
+            logic delayRDQS_pl;                 // Delay the low-input of the DDR
+
             ODDR gowin_dqs_oddr_inst  
                 (
                 .Q0(gowin_dqs_out),             // ODDR -> IVDS
@@ -437,12 +431,12 @@ generate if (FPGA_FAMILY == "GW2A-18") begin // Newer altera_gpio_lite DDR Buffe
                 );
  
             // sync to negedge instead of posedge, 1/2 clock earlier output
-            defparam gowin_dqs_oddr_inst.TXCLK_POL   = 1'b1;
+            //defparam gowin_dqs_oddr_inst.TXCLK_POL   = 1'b1;
 
             IDDR gowin_dqs_iddr_inst  
                 (
                 .Q0(RDQS_ph[x]),                // SDR to app #0
-                .Q1(RDQS_pl[x]),                // SDR to app #1
+                .Q1(delayRDQS_pl),              // SDR to app #1
                 .D(gowin_dqs_in),               // DDR input signal
                 .CLK(DDR_CLK_RDQ) 				// read clock
                 );
@@ -458,6 +452,12 @@ generate if (FPGA_FAMILY == "GW2A-18") begin // Newer altera_gpio_lite DDR Buffe
             
             assign RDQS_nl[x] = ~RDQS_pl[x];
             assign RDQS_nh[x] = ~RDQS_ph[x];
+
+            
+            always @ (posedge DDR_CLK)
+                begin
+                    RDQS_pl[x] <= delayRDQS_pl;
+                end
 
         end
 
@@ -495,6 +495,7 @@ generate if (FPGA_FAMILY == "GW2A-18") begin // Newer altera_gpio_lite DDR Buffe
 //
 ///////////////////////////////////////////////////////////////////////////
     
+
     for (x=0; x<DQ_WIDTH; x = x + 1)
         begin : gowin_DQ_bus
 
@@ -502,23 +503,25 @@ generate if (FPGA_FAMILY == "GW2A-18") begin // Newer altera_gpio_lite DDR Buffe
             wire gowin_dq_in;
             wire gowin_dq_tx_out;
 
+            logic delayRDQ_l;                       // Delay the low-input of the DDR
+
             ODDR gowin_dq_oddr_inst  
                 (
                 .Q0(gowin_dq_out),                  // ODDR -> IOBUF
                 .Q1(gowin_dq_tx_out),               // OE   -> IOBUF, 1'b0 => output
                 .D0(PIN_WDATA_PIPE_h[0][x]),        // Input data [SDR]
                 .D1(PIN_WDATA_PIPE_l[0][x]),        // Input data [SDR]
-                .TX(PIN_OE_WDQ_wide[x]),            // Input 'output enable' 1=out
+                .TX(~PIN_OE_WDQ_wide[x]),           // Input 'output enable' 1'b0=out
                 .CLK(DDR_CLK_WDQ)                   // write clock
                 );
 
             // sync to negedge instead of posedge, 1/2 clock earlier output
-            defparam gowin_dq_oddr_inst.TXCLK_POL   = 1'b1; 
+            //defparam gowin_dq_oddr_inst.TXCLK_POL   = 1'b1; 
 
             IDDR gowin_dq_iddr_inst  
                 (
                 .Q0(RDQ_h[x]),                      // SDR to app #0
-                .Q1(RDQ_l[x]),				        // SDR to app #1
+                .Q1(delayRDQ_l),                    // SDR to app #1
                 .D(gowin_dq_in),                    // DDR input signal
                 .CLK(DDR_CLK_RDQ)                   // read clock
                 );
@@ -530,6 +533,11 @@ generate if (FPGA_FAMILY == "GW2A-18") begin // Newer altera_gpio_lite DDR Buffe
                 .I(gowin_dq_out),                   // ODDR -> IOBUF
                 .OEN(gowin_dq_tx_out)               // input when 1'b1
                 );
+            
+            always @ (posedge DDR_CLK)
+                begin
+                    RDQ_l[x] <= delayRDQ_l;
+                end
 
         end
 
@@ -585,7 +593,7 @@ end // always
 // *****************************************************************************************************************
 // *****************************************************************************************************************
 logic        RD_WINDOW;
-always_comb  RD_WINDOW = RDATA_window[RD_POS+RDQ_SYNC_CHAIN+3+CMD_ADD_DLY]; // The extra '+3' counts for the extra latching of input to the 'RDQ_CACHE_x[0]'
+always_comb  RD_WINDOW = RDATA_window[RD_POS+RDQ_SYNC_CHAIN+3+CMD_ADD_DLY+(GOWIN_ENABLE*GOWIN_READ_OFFSET)]; // The extra '+3' counts for the extra latching of input to the 'RDQ_CACHE_x[0]'
 
 (*preserve*) logic RDATA_toggle_int   =0;//,RDATA_toggle_int2  =0;
 (*preserve*) logic RDATA_toggle_int_a1=0,RDATA_toggle_int_a2=0;
