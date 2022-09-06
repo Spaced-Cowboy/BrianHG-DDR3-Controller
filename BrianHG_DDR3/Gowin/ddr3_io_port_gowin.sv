@@ -147,7 +147,7 @@ assign DDR3_CKE        = CKE      ;  // Driven by the CLK_IN clock domain, sub 1
 localparam GOWIN_ENABLE      = (FPGA_VENDOR[0] == "G" || FPGA_VENDOR[0] == "g") ? 1 : 0;
 
 // For Gowin: Cope with both GW2A-18 and GW2A-55 (same architecture)
-localparam GOWIN_READ_OFFSET = GOWIN_ENABLE * ((FPGA_FAMILY.substr(0,3) == "GW2A") ? 2 : 0);
+localparam GOWIN_READ_OFFSET = GOWIN_ENABLE * ((FPGA_FAMILY.substr(0,3) == "GW2A") ? 3 : 0);
 
 localparam          DDR_OUT_LATENCY  = 1 - CMD_ADD_DLY ; // *** -1 counts for Altera's DDR output buffer clock latency cycles + another 2 for this core's internal latch system.
 localparam          DQS_WIDTH        = 6 ;
@@ -422,8 +422,8 @@ generate if (FPGA_FAMILY == "GW2A-18") begin // Gowin Arora parts.
                 (
                 .Q0(gowin_dqs_out),             // ODDR -> IVDS
                 .Q1(gowin_dqs_tx),              // 1'b0 => output
-                .D0(1'b1),                      // Input data [SDR]
-                .D1(1'b0),                      // Input data [SDR]
+                .D0(1'b0),                      // Input data [SDR]
+                .D1(1'b1),                      // Input data [SDR]
                 .TX(~OE_DQS[x]),                // Input 'output enable' 0=output
                 .CLK(DDR_CLK)                   // DDR clock
                 );
