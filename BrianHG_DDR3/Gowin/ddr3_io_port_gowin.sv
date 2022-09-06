@@ -147,7 +147,7 @@ assign DDR3_CKE        = CKE      ;  // Driven by the CLK_IN clock domain, sub 1
 localparam GOWIN_ENABLE      = (FPGA_VENDOR[0] == "G" || FPGA_VENDOR[0] == "g") ? 1 : 0;
 
 // For Gowin: Cope with both GW2A-18 and GW2A-55 (same architecture)
-localparam GOWIN_READ_OFFSET = GOWIN_ENABLE * ((FPGA_FAMILY.substr(0,3) == "GW2A") ? 3 : 0);
+localparam GOWIN_READ_OFFSET = GOWIN_ENABLE * ((FPGA_FAMILY.substr(0,3) == "GW2A") ? 2 : 0);
 
 localparam          DDR_OUT_LATENCY  = 1 - CMD_ADD_DLY ; // *** -1 counts for Altera's DDR output buffer clock latency cycles + another 2 for this core's internal latch system.
 localparam          DQS_WIDTH        = 6 ;
@@ -418,8 +418,6 @@ generate if (FPGA_FAMILY == "GW2A-18") begin // Gowin Arora parts.
             wire gowin_dqs_in;                  // Internal: IOBUF->IDDR
             wire gowin_dqs_tx;                  // Internal: OE on input to ODDR
 
-            logic delayRDQS_pl;                 // Delay the low-input of the DDR
-
             ODDR gowin_dqs_oddr_inst  
                 (
                 .Q0(gowin_dqs_out),             // ODDR -> IVDS
@@ -435,8 +433,8 @@ generate if (FPGA_FAMILY == "GW2A-18") begin // Gowin Arora parts.
 
             IDDR gowin_dqs_iddr_inst  
                 (
-                .Q0(RDQS_ph[x]),                // SDR to app #0
-                .Q1(delayRDQS_pl),              // SDR to app #1
+                .Q0(RDQS_pl[x]),                // SDR to app #0
+                .Q1(RDQS_ph[x]),                // SDR to app #1
                 .D(gowin_dqs_in),               // DDR input signal
                 .CLK(DDR_CLK_RDQ) 				// read clock
                 );
@@ -452,12 +450,6 @@ generate if (FPGA_FAMILY == "GW2A-18") begin // Gowin Arora parts.
             
             assign RDQS_nl[x] = ~RDQS_pl[x];
             assign RDQS_nh[x] = ~RDQS_ph[x];
-
-            
-            always @ (posedge DDR_CLK)
-                begin
-                    RDQS_pl[x] <= delayRDQS_pl;
-                end
 
         end
 
@@ -503,8 +495,6 @@ generate if (FPGA_FAMILY == "GW2A-18") begin // Gowin Arora parts.
             wire gowin_dq_in;
             wire gowin_dq_tx_out;
 
-            logic delayRDQ_l;                       // Delay the low-input of the DDR
-
             ODDR gowin_dq_oddr_inst  
                 (
                 .Q0(gowin_dq_out),                  // ODDR -> IOBUF
@@ -520,8 +510,8 @@ generate if (FPGA_FAMILY == "GW2A-18") begin // Gowin Arora parts.
 
             IDDR gowin_dq_iddr_inst  
                 (
-                .Q0(RDQ_h[x]),                      // SDR to app #0
-                .Q1(delayRDQ_l),                    // SDR to app #1
+                .Q0(RDQ_l[x]),                      // SDR to app #0
+                .Q1(RDQ_h[x]),                      // SDR to app #1
                 .D(gowin_dq_in),                    // DDR input signal
                 .CLK(DDR_CLK_RDQ)                   // read clock
                 );
@@ -533,12 +523,6 @@ generate if (FPGA_FAMILY == "GW2A-18") begin // Gowin Arora parts.
                 .I(gowin_dq_out),                   // ODDR -> IOBUF
                 .OEN(gowin_dq_tx_out)               // input when 1'b1
                 );
-            
-            always @ (posedge DDR_CLK)
-                begin
-                    RDQ_l[x] <= delayRDQ_l;
-                end
-
         end
 
 ///////////////////////////////////////////////////////////////////////////

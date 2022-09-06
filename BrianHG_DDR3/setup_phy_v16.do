@@ -69,6 +69,7 @@ add wave -unsigned    /BrianHG_DDR3_PHY_SEQ_v16_tb/WDT_COUNTER
 add wave -divider     "DDR3 CLK"
 add wave -hexadecimal /BrianHG_DDR3_PHY_SEQ_v16_tb/DDR3_CLK
 add wave -hexadecimal -color cyan /BrianHG_DDR3_PHY_SEQ_v16_tb/DDR3_CLK_RDQ
+add wave -hexadecimal -color yellow /BrianHG_DDR3_PHY_SEQ_v16_tb/DDR3_CLK_WDQ
 add wave -divider     "DDR3 SEQ RAM IO"
 add wave -hexadecimal /BrianHG_DDR3_PHY_SEQ_v16_tb/DDR3_RESET_n
 add wave -hexadecimal /BrianHG_DDR3_PHY_SEQ_v16_tb/DDR3_CKE
@@ -91,11 +92,9 @@ add wave -divider     "DDR3_PHY Data Path"
 #add wave -hexadecimal /BrianHG_DDR3_PHY_SEQ_v16_tb/DUT_PHY_SEQ/genblk6/BHG_DDR3_IO_PORT_GOWIN/genblk2/gowin_DQ_bus[15]/gowin_dq_iddr_inst/Q0_oreg
 #add wave -hexadecimal /BrianHG_DDR3_PHY_SEQ_v16_tb/DUT_PHY_SEQ/genblk6/BHG_DDR3_IO_PORT_GOWIN/genblk2/gowin_DQ_bus[15]/gowin_dq_iddr_inst/Q1_oreg
 add wave -hexadecimal -color yellow /BrianHG_DDR3_PHY_SEQ_v16_tb/DUT_PHY_SEQ/genblk6/BHG_DDR3_IO_PORT_GOWIN/RD_WINDOW
-add wave -hexadecimal -color yellow /BrianHG_DDR3_PHY_SEQ_v16_tb/DUT_PHY_SEQ/genblk6/BHG_DDR3_IO_PORT_GOWIN/GOWIN_READ_OFFSET
-add wave -hexadecimal -color yellow /BrianHG_DDR3_PHY_SEQ_v16_tb/DUT_PHY_SEQ/genblk6/BHG_DDR3_IO_PORT_GOWIN/RDQ_POS
-add wave -hexadecimal -color yellow /BrianHG_DDR3_PHY_SEQ_v16_tb/DUT_PHY_SEQ/genblk6/BHG_DDR3_IO_PORT_GOWIN/RDQ_CACHE_l
-add wave -hexadecimal -color yellow /BrianHG_DDR3_PHY_SEQ_v16_tb/DUT_PHY_SEQ/genblk6/BHG_DDR3_IO_PORT_GOWIN/RDQ_CACHE_h
-add wave -hexadecimal -color yellow /BrianHG_DDR3_PHY_SEQ_v16_tb/DUT_PHY_SEQ/genblk6/BHG_DDR3_IO_PORT_GOWIN/RDATA_int
+#add wave -hexadecimal -color yellow /BrianHG_DDR3_PHY_SEQ_v16_tb/DUT_PHY_SEQ/genblk6/BHG_DDR3_IO_PORT_GOWIN/RDQ_CACHE_l
+#add wave -hexadecimal -color yellow /BrianHG_DDR3_PHY_SEQ_v16_tb/DUT_PHY_SEQ/genblk6/BHG_DDR3_IO_PORT_GOWIN/RDQ_CACHE_h
+#add wave -hexadecimal -color yellow /BrianHG_DDR3_PHY_SEQ_v16_tb/DUT_PHY_SEQ/genblk6/BHG_DDR3_IO_PORT_GOWIN/RDATA_int
 
 add wave -hexadecimal /BrianHG_DDR3_PHY_SEQ_v16_tb/DUT_PHY_SEQ/genblk6/BHG_DDR3_IO_PORT_GOWIN/RDQS_ph
 add wave -hexadecimal /BrianHG_DDR3_PHY_SEQ_v16_tb/DUT_PHY_SEQ/genblk6/BHG_DDR3_IO_PORT_GOWIN/RDQS_pl
