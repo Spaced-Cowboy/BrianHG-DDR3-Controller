@@ -251,8 +251,8 @@ generate if (FPGA_FAMILY == "GW2A-18") begin // Gowin Arora parts.
                 (
                 .Q0(gowin_clock),       // Send +ve clock to this pin
                 .Q1(gowin_ck_OE),       // Not used but save a warning
-                .D0(1'b0),				// +ve clock goes low to start
-                .D1(1'b1),				// +ve clock goes high in 2nd phase
+                .D0(1'b0),				// clock goes low to start
+                .D1(1'b1),				// clock goes high in 2nd phase
                 .TX(1'b0),				// TX=0 -> Output pin
                 .CLK(DDR_CLK)			// DDR clock
                 );
